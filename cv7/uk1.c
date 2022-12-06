@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <cstdint>
+#include <limits.h>
 
 #define CHAR_BLOCK 10
 #define WING_COUNT 4    
@@ -207,6 +208,13 @@ void freeWings(uintptr_t* wings) {
     free(wings);
 }
 
+void freeTree(TREE* tree) {
+    for (int i = 0; i < WING_COUNT; i++) {
+        if (tree->branches[i]) freeTree((TREE*) tree->branches[i]);
+    }
+    free(tree);
+}
+
 TREE* makeTree(uintptr_t parent, uintptr_t* wings, unsigned int depth, WING* wing, int valueA, int valueB, int ind, int* searchedIndexes) {
     TREE* tree = (TREE*) malloc(sizeof(*tree));
     tree->parent = parent;
@@ -259,68 +267,51 @@ void printBranch(TREE* tree) {
     printf("%c: %c[%d] (%d)\n", player, tree->name, tree->index, tree->value);
 }
 
-void printDepth(TREE* tree, unsigned int depth) {
-    if (tree->depth == depth) {
-        printBranch(tree);
-    }
-
+int findMaxIndex(int* arr) {
+    int m = INT_MIN;
+    int index = 0;
     for (int i = 0; i < WING_COUNT; i++) {
-        if (tree->branches[i]) {
-            printDepth((TREE*) tree->branches[i], depth);
+        if (m < arr[i]) {
+            m = arr[i];
+            index = i;
         }
     }
+    return index;
 }
 
-int getDepthValue(TREE* parent, int* vA, int* vB) {
-    if (!parent) return 1;
-
-    int valueA = 0;
-    int valueB = 0;
+int findMinIndex(int* arr) {
+    int m = INT_MAX;
+    int index = 0;
     for (int i = 0; i < WING_COUNT; i++) {
-        TREE* branch = (TREE*) parent->branches[i];
-        if (branch) {
-            valueA += branch->valueA;
-            valueB += branch->valueB;
-        } 
+        if (m > arr[i]) {
+            m = arr[i];
+            index = i;
+        }
     }
-    *vA = valueA;
-    *vB = valueB;
-    return 0;
+    return index;
 }
 
-TREE* findBestBranch(TREE* tree, TREE* best, unsigned int depth) {    
-    if (depth % 2) {
-        if (tree->valueA > best->valueA) best = tree;
+int findBestBranch(TREE* tree, unsigned int depth) {    
+
+    if (isLast(tree)) return tree->valueA - tree->valueB;
+
+    int results[4];
+    for (int i = 0; i < WING_COUNT; i++) {
+        if (tree->branches[i]) {
+            results[i] = findBestBranch((TREE*) tree->branches[i], depth);
+        }
+        else if (tree->depth % 2) results[i] = INT_MAX;
+        else results[i] = INT_MIN;
+    }
+
+    if (tree->depth != depth) {
+        if (tree->depth % 2) return results[findMinIndex(results)];
+        return results[findMaxIndex(results)];
     }
     else {
-        if (tree->valueA < best->valueA) best = tree;
+        if (tree->depth % 2) return findMinIndex(results);
+        return findMaxIndex(results);
     }
-    best = tree;
-
-    for (int i = 0; i < WING_COUNT; i++) {
-        if (tree->branches[i]) {
-            best = findBestBranch((TREE*) tree->branches[i], best, depth);
-        }
-    }
-    return best;
-}
-
-TREE* findParent(TREE* tree, unsigned int depth) {
-    if (tree->depth == depth) return tree;
-    
-    TREE* parent = (TREE*) tree->parent;
-    while (parent) {
-        if (parent->depth == depth) break;
-        parent = (TREE*) parent->parent;
-    }
-    return parent;
-}
-
-void freeTree(TREE* tree) {
-    for (int i = 0; i < WING_COUNT; i++) {
-        if (tree->branches[i]) freeTree((TREE*) tree->branches[i]);
-    }
-    free(tree);
 }
 
 int main() {
@@ -345,17 +336,15 @@ int main() {
     int searchedIndexes[] = {0,0,0,0};
     TREE* tree = makeTree(0, wings, 0, NULL, 0, 0, 0, searchedIndexes);
     TREE* root = tree;
-    TREE* best = NULL;
 
-    unsigned int depth = 1;
-    while (true) {
-        best = findBestBranch(tree, tree, depth);
-        tree = findParent(best, depth++);
-        if (!tree) break;
+    unsigned int depth = 0;
+    while (!isLast(tree)) {
+        int bestIndex = findBestBranch(tree, depth++);
+        tree = (TREE*) tree->branches[bestIndex];
         printBranch(tree);
     }
 
-    printf("Celkem A/B: %d/%d\n", best->valueA, best->valueB);
+    printf("Celkem A/B: %d/%d\n", tree->valueA, tree->valueB);
 
     freeTree(root);
     freeWings(wings);
