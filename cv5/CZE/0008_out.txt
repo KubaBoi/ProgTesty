@@ -1,0 +1,5 @@
+Pozice letadel:
+Vzdalenost nejblizsich letadel: 3.700000
+Nalezenych dvojic: 2
+KLM - LOT
+KLM - Wizz

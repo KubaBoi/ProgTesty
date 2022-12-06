@@ -1,0 +1,10 @@
+#0
+
+beer
+wine
+
+apple
+orange
+
+pot
+spoon
