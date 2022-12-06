@@ -289,17 +289,13 @@ int getDepthValue(TREE* parent, int* vA, int* vB) {
 }
 
 TREE* findBestBranch(TREE* tree, TREE* best, unsigned int depth) {    
-    int vA, vB;
-    if (isLast(tree) && !getDepthValue((TREE*) tree->parent, &vA, &vB)) {
-        int vbA, vbB;   
-        if (getDepthValue((TREE*) best->parent, &vbA, &vbB)) best = tree;
-        else if (depth % 2) {
-            if (vA > vbA) best = tree;
-        }
-        else {
-            if (vB > vbB) best = tree;
-        }
+    if (depth % 2) {
+        if (tree->valueA > best->valueA) best = tree;
     }
+    else {
+        if (tree->valueA < best->valueA) best = tree;
+    }
+    best = tree;
 
     for (int i = 0; i < WING_COUNT; i++) {
         if (tree->branches[i]) {
