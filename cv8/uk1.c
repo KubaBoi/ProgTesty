@@ -41,15 +41,17 @@ void printList(TITEM* first) {
 
 TITEM* newItem(const char* name, TITEM* next) {
     if (!next) {
-        next = (TITEM*) malloc(sizeof(next));
+        next = (TITEM*) malloc(sizeof(*next));
         next->m_Next = NULL;
-        next->m_Name = (char*) name;
+        next->m_Name = (char*) malloc(strlen(name) + 1);
+        strcpy(next->m_Name, name);
         return next;
     }
 
-    TITEM* newItm = (TITEM*) malloc(sizeof(newItm));
+    TITEM* newItm = (TITEM*) malloc(sizeof(*newItm));
     newItm->m_Next = next;
-    newItm->m_Name = (char*) name;
+    newItm->m_Name = (char*) malloc(strlen(name) + 1);
+    strcpy(newItm->m_Name, name);
     return newItm;
 }
 
@@ -105,28 +107,36 @@ TITEM* swap(TITEM* first, TITEM* itm1, TITEM* itm2) {
     return first;
 }
 
-TITEM* sortListCmp(TITEM* l, int ascending, int (*cmpFn)(const TITEM*, const TITEM*)) {
-    printList(l);
-    TITEM* first = l;
-    TITEM* m = l;
+int getSize(TITEM* first) {
+    int size = 0;
+    while (first) {
+        size++;
+        first = first->m_Next;
+    }
+    return size;
+}
 
-    while (l->m_Next) {
-        int a = cmpFn(l, l->m_Next);
-        if ((ascending && a > 0) || (!ascending && a < 0)) {
-            first = swap(first, l, l->m_Next);
-        }
-        else {
-            l = l->m_Next;
+TITEM* sortListCmp(TITEM* l, int ascending, int (*cmpFn)(const TITEM*, const TITEM*)) {
+    TITEM* first = l;
+
+    int size = getSize(first);
+
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            TITEM* item = findByIndex(first, j);
+            int a = cmpFn(item, item->m_Next);
+            if ((ascending && a > 0) || (!ascending && a < 0)) {
+                first = swap(first, item, item->m_Next);
+            }
         }
     }
-    printf("\n");
-    printList(first);
     return first;
 }
 
 void freeList(TITEM* src) {
     while (src) {
         TITEM* temp = src->m_Next;
+        free(src->m_Name);
         free(src);
         src = temp;
     }
@@ -228,8 +238,8 @@ int main ( int argc, char * argv [] )
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next
            && ! strcmp ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next -> m_Name, "lin" ) );
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
-  printf("CPM_NAME_LEN 1\n");
-  freeList ( l );
+  printf("CPM_NAME_LEN 2\n");
+  freeList(l);
   l = NULL;
   strncpy ( tmp, "BI-PA1", sizeof ( tmp ) - 1 );
   tmp[sizeof ( tmp ) - 1 ] = '\0';
@@ -246,6 +256,7 @@ int main ( int argc, char * argv [] )
   strncpy ( tmp, "AG1", sizeof ( tmp ) - 1 );
   tmp[sizeof ( tmp ) - 1 ] = '\0';
   l = newItem ( tmp, l );
+  printList(l);
   assert ( l
            && ! strcmp ( l -> m_Name, "AG1" ) );
   assert ( l -> m_Next
@@ -257,6 +268,7 @@ int main ( int argc, char * argv [] )
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next
            && ! strcmp ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Name, "BI-PA1" ) );
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
+  printf("A - 0\n");
   l = sortListCmp ( l, 1, cmpName );
   assert ( l
            && ! strcmp ( l -> m_Name, "AG1" ) );
@@ -269,6 +281,7 @@ int main ( int argc, char * argv [] )
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next
            && ! strcmp ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Name, "lin" ) );
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
+  printf("A - 1\n");
   l = sortListCmp ( l, 1, cmpNameInsensitive );
   assert ( l
            && ! strcmp ( l -> m_Name, "AG1" ) );
@@ -281,6 +294,7 @@ int main ( int argc, char * argv [] )
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next
            && ! strcmp ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Name, "NI-PAR" ) );
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
+  printf("A - 2\n");
   l = sortListCmp ( l, 1, cmpNameLen );
   assert ( l
            && ! strcmp ( l -> m_Name, "AG1" ) );
@@ -309,6 +323,7 @@ int main ( int argc, char * argv [] )
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next
            && ! strcmp ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next -> m_Name, "BIE-PA2" ) );
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
+  printf("A - 3\n");
   l = sortListCmp ( l, 0, cmpNameLen );
   assert ( l
            && ! strcmp ( l -> m_Name, "BIE-PA2" ) );
@@ -323,6 +338,7 @@ int main ( int argc, char * argv [] )
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next
            && ! strcmp ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next -> m_Name, "lin" ) );
   assert ( l -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
+  printf("A - 4\n");
   freeList ( l );
   return EXIT_SUCCESS;
 }
