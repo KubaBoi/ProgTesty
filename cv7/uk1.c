@@ -393,8 +393,7 @@ int main() {
     for (int i = 0; i < WING_COUNT; i++) tree->branches[i] = 0;
 
     makeTree(tree, wings, searchedIndexes, MAX_REC);
-    TREE* root = tree;
-
+    
     int A = 0;
     int B = 0;
 
