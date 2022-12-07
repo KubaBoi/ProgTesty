@@ -6,7 +6,8 @@
 #include <limits.h>
 
 #define CHAR_BLOCK 10
-#define WING_COUNT 4    
+#define WING_COUNT 4  
+#define MAX_REC 11
 
 typedef struct wing {
     char name;
@@ -208,14 +209,21 @@ void freeWings(uintptr_t* wings) {
     free(wings);
 }
 
-void freeTree(TREE* tree) {
+void freeTree(TREE* tree, int expection) {
     for (int i = 0; i < WING_COUNT; i++) {
-        if (tree->branches[i]) freeTree((TREE*) tree->branches[i]);
+        if (expection == i) continue;
+        if (tree->branches[i]) freeTree((TREE*) tree->branches[i], -1);
     }
     free(tree);
 }
 
-TREE* makeTree(uintptr_t parent, uintptr_t* wings, unsigned int depth, WING* wing, int valueA, int valueB, int ind, int* searchedIndexes) {
+TREE* makeTree(uintptr_t parent, 
+                uintptr_t* wings, 
+                unsigned int depth, 
+                unsigned int endDepth,
+                WING* wing, 
+                int valueA, int valueB, int ind, 
+                int* searchedIndexes) {
     TREE* tree = (TREE*) malloc(sizeof(*tree));
     tree->parent = parent;
     tree->depth = depth;
@@ -229,6 +237,13 @@ TREE* makeTree(uintptr_t parent, uintptr_t* wings, unsigned int depth, WING* win
     else {
         tree->name = 'O';
         tree->value = 0;
+    }
+
+    if (depth >= endDepth) {
+        for (int i = 0; i < WING_COUNT; i++) {
+            tree->branches[i] = 0;
+        }
+        return tree;
     }
     
     for (int i = 0; i < WING_COUNT; i++) {
@@ -244,7 +259,7 @@ TREE* makeTree(uintptr_t parent, uintptr_t* wings, unsigned int depth, WING* win
             for (int j = 0; j < WING_COUNT; j++) sIndxs[j] = searchedIndexes[j];
 
             sIndxs[i]++;
-            tree->branches[i] = (uintptr_t) makeTree((uintptr_t) tree, wings, depth+1, w, vA, vB, index, sIndxs);
+            tree->branches[i] = (uintptr_t) makeTree((uintptr_t) tree, wings, depth+1, endDepth, w, vA, vB, index, sIndxs);
             free(sIndxs);
         }
         else tree->branches[i] = 0;
@@ -334,19 +349,41 @@ int main() {
     }
 
     int searchedIndexes[] = {0,0,0,0};
-    TREE* tree = makeTree(0, wings, 0, NULL, 0, 0, 0, searchedIndexes);
-    TREE* root = tree;
+    TREE* tree = makeTree(0, wings, 0, MAX_REC, NULL, 0, 0, 0, searchedIndexes);
+
+    int A = 0;
+    int B = 0;
 
     unsigned int depth = 0;
     while (!isLast(tree)) {
-        int bestIndex = findBestBranch(tree, depth++);
+        int bestIndex = findBestBranch(tree, depth);
         tree = (TREE*) tree->branches[bestIndex];
+        
+        if (depth % 2) B += tree->value;
+        else A += tree->value;
+
+        depth = tree->depth;
+        int index = tree->index;
+
         printBranch(tree);
+        freeTree((TREE*) tree->parent, bestIndex);
+        printBranch(tree);
+
+        searchedIndexes[bestIndex]++;
+        makeTree(tree,   //parent
+            wings, // wings
+            depth, // depth 
+            depth + MAX_REC, // end depth
+            (WING*) wings[bestIndex], // wing
+            A, // valueA
+            B, // valueB      
+            index, // ind
+            searchedIndexes);
     }
 
-    printf("Celkem A/B: %d/%d\n", tree->valueA, tree->valueB);
+    printf("Celkem A/B: %d/%d\n", A, B);
 
-    freeTree(root);
+    freeTree(tree, -1);
     freeWings(wings);
     free(str);
 }
