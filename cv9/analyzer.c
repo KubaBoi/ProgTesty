@@ -15,3 +15,11 @@ int analyze(char* matrix, uintptr_t* posCells) {
     if (filled == MATRIX_SIZE) return 0;
     return 2;
 }
+
+double percentage(char* matrix) {
+    int counter = 0;
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        if (matrix[i] != ' ') counter++;
+    }
+    return (double)counter / (MATRIX_SIZE) * 100;
+}

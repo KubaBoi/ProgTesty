@@ -35,17 +35,11 @@ int main() {
         changes = 0;
         changes += fillOnePosibs(matrix, posCells);
         changes += fillLonelyPosibs(matrix, posCells);
-        //changes += findLines(matrix, posCells);
+        changes += findLines(matrix, posCells);
         iter++;
     }
 
-    //printPosCells(matrix, posCells);
-
-    if (iter >= 100000) {
-        printMatrix(matrix);
-        printf("iterations: %d\n", iter);
-        return 1;
-    }
+    printPosCells(matrix, posCells);
 
     int result = analyze(matrix, posCells);
     switch (result)
@@ -60,7 +54,8 @@ int main() {
         printMatrix(matrix);
         break;
     }
-    //printf("iterations: %d\n", iter);
+    printf("percetange: %lf\n", percentage(matrix));
+    printf("iterations: %d\n", iter);
 
     freeCells(posCells);
     free(matrix);
