@@ -500,39 +500,54 @@ int findLines(char* matrix, uintptr_t* posCells) {
             int yConst = (rect / RECT_LENGTH) * RECT_LENGTH;
 
             uintptr_t* items = (uintptr_t*) malloc(sizeof(*items) * countInRect);
-            for (int y = 0; y < RECT_LENGTH; y++) {
-                for (int x = 0; x < RECT_LENGTH; x++) {
-                    int xP = x + xConst;
-                    int yP = y + yConst;
-                    int ind = getIndex(xP, yP);
-                    
-                    CELL* cellP = (CELL*) posCells[ind];
+            for (int o = 0; o < countInRect; o++) items[o] = 0;
 
-                    if (!cellP->posibs[j]) continue;
+            for (int o = 0; o < RECT_LENGTH; o++) {
+                int xP = o + xConst;
+                int yP = o + yConst;
+                
+                int indX = getIndex(xP, Y);
+                int indY = getIndex(X, yP);
 
-                    if (xP == X) countInRow++;
-                    else if (yP == Y) countInCol++;
-                    else continue;
+                CELL* cellX = (CELL*) posCells[indX];
+                CELL* cellY = (CELL*) posCells[indY];
 
-                    items[(countInRow + countInCol) - 1] = (uintptr_t) cellP;
-                }
+                if (cellX->posibs[j]) items[countInRow++] = (uintptr_t) cellX;
+                else if (cellY->posibs[j]) items[countInCol++] = (uintptr_t) cellY;
             }
 
             if (countInRow == countInRect) {
                 changes += removePosInRow(posCells, i, j) - countInRow;
-                for (int o = 0; o < countInRow; o++) {
-                    CELL* remCell = (CELL*) items[o];
+                printf("%d - %d, %d\n", countInRow, i, rect);
+                printf("%c -> ", 'a' + j);
+                for (int o = 0; o < MATRIX_LENGTH; o++) {
+                    CELL* cell = (CELL*) posCells[i / MATRIX_LENGTH + o];
+                    printf("%d ", cell->posibs[j]);
+                }
+                printf("\n");
+            }
+            else if (countInCol == countInRect) {
+                changes += removePosInCol(posCells, i, j) - countInCol;
+            }
+            else {
+                free(items);
+                continue;
+            }
+
+            for (int o = 0; o < countInRect; o++) {
+                CELL* remCell = (CELL*) items[o];
+                if (remCell && !remCell->posibs[j]) {
                     remCell->count++;
                     remCell->posibs[j] = true;
                 }
             }
-            else if (countInCol == countInRect) {
-                changes += removePosInCol(posCells, i, j) - countInCol;
-                for (int o = 0; o < countInCol; o++) {
-                    CELL* remCell = (CELL*) items[o];
-                    remCell->count++;
-                    remCell->posibs[j] = true;
+            if (countInRow == countInRect) {
+                printf("%c -> ", 'a' + j);
+                for (int o = 0; o < MATRIX_LENGTH; o++) {
+                    CELL* cell = (CELL*) posCells[i / MATRIX_LENGTH + o];
+                    printf("%d ", cell->posibs[j]);
                 }
+                printf("\n\n");
             }
             free(items);
         }
@@ -617,6 +632,7 @@ int main() {
 
     if (iter >= 100000) {
         printMatrix(matrix);
+        printf("iterations: %d\n", iter);
         return 1;
     }
 
