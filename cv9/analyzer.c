@@ -1,5 +1,18 @@
 #include "analyzer.h"
 
+int findMax(char* matrix, uintptr_t* posCells) {
+    int max = 0;
+    int maxIndex = 0;
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        CELL* cell = (CELL*) posCells[i];
+        if (cell->count > max) {
+            max = cell->count;
+            maxIndex = i;
+        }
+    }
+    return maxIndex;
+}
+
 int analyze(char* matrix, uintptr_t* posCells) {
     int filled = 0;
     for (int i = 0; i < MATRIX_SIZE; i++) {
@@ -14,19 +27,6 @@ int analyze(char* matrix, uintptr_t* posCells) {
 
     if (filled == MATRIX_SIZE) return 1;
     return 2 + findMax(matrix, posCells);
-}
-
-int findMax(char* matrix, uintptr_t* posCells) {
-    int max = 0;
-    int maxIndex = 0;
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        CELL* cell = (CELL*) posCells[i];
-        if (cell->count > max) {
-            max = cell->count;
-            maxIndex = i;
-        }
-    }
-    return maxIndex;
 }
 
 double percentage(char* matrix) {
