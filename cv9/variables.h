@@ -1,6 +1,13 @@
 #ifndef VARIABLES_H
 #define VARIABLES_H
 
+/*
+0 - only wanted ouput
+1 - debug
+2 - only debug
+*/
+#define PRINT_STATE 1
+
 #define CHAR_BLOCK 10
 #define LINE_LENGTH 65
 #define RECT_LENGTH 4

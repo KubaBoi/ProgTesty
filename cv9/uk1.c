@@ -26,7 +26,8 @@ int main() {
         free(matrix);
         return 1;
     }
-
+    
+    double tempPerc = percentage(matrix);
     makePosibs(matrix, posCells);
 
     int changes = 1;
@@ -39,7 +40,7 @@ int main() {
         iter++;
     }
 
-    printPosCells(matrix, posCells);
+    //printPosCells(matrix, posCells);
 
     int result = analyze(matrix, posCells);
     switch (result)
@@ -48,14 +49,17 @@ int main() {
         printMatrix(matrix);
         break;
     case 1:
-        printf("Reseni neexistuje.\n");
+        print("Reseni neexistuje.\n");
         break;
     default:
         printMatrix(matrix);
         break;
     }
-    printf("percetange: %lf\n", percentage(matrix));
-    printf("iterations: %d\n", iter);
+    printd("temp prcnt: %lf\n", tempPerc);
+    printd("percetange: %lf\n", percentage(matrix));
+    printd("iterations: %d\n", iter);
+
+    findTwoLines(matrix, posCells);
 
     freeCells(posCells);
     free(matrix);

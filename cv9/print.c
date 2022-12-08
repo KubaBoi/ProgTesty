@@ -2,10 +2,10 @@
 
 void printDelimiter(bool full) {
     for (int i = 0; i < MATRIX_LENGTH; i++) {
-        if (full) printf("+---");
-        else printf("+   ");
+        if (full) print("+---");
+        else print("+   ");
     }
-    printf("+\n");
+    print("+\n");
 }
 
 void printMatrix(char* matrix) {
@@ -13,11 +13,11 @@ void printMatrix(char* matrix) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         if (!(i % 4)) printf("| %c   ", matrix[i]);
         else if (!((i + 1) % 16)) {
-            printf("%c |\n", matrix[i]);
+            print("%c |\n", matrix[i]);
             printDelimiter(!((i + 1) % 64));
         }
         else if (!((i + 1) % 4)) printf("%c ", matrix[i]);
-        else printf("%c   ", matrix[i]);
+        else print("%c   ", matrix[i]);
     }
 }
 
@@ -30,15 +30,31 @@ void printPosCells(char* matrix, uintptr_t* posCells) {
 
         int x, y;
         getCoordinates(i, &x, &y);
-        printf("%d:%d - ", x, y);
+        printd("%d:%d - ", x, y);
         for (int j = 0; j < MATRIX_LENGTH; j++) {
             if (cell->posibs[j]) {
                 countChars++;
-                printf("%c, ", 'a' + j);
+                printd("%c, ", 'a' + j);
             }
         }
         count++;
-        printf("\n");
+        printd("\n");
     }
-    printf("%d, %d\n", count, countChars);
+    printd("%d, %d\n", count, countChars);
+}
+
+void print(const char* format, ...) {
+    if (PRINT_STATE == 2) return;
+
+    va_list valist;
+    va_start(valist, format);
+    vprintf(format, valist);
+}
+
+void printd(const char* format, ...) {
+    if (PRINT_STATE == 0) return;
+
+    va_list valist;
+    va_start(valist, format);
+    vprintf(format, valist);
 }

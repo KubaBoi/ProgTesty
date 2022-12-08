@@ -161,3 +161,54 @@ int findLines(char* matrix, uintptr_t* posCells) {
     }
     return changes;
 }
+
+int findTwoLines(char* matrix, uintptr_t* posCells) {
+    int changes = 0;
+
+    for (int j = 0; j < MATRIX_LENGTH; j++) {
+        uintptr_t* matrices = (uintptr_t*) malloc(sizeof(*matrices) * MATRIX_LENGTH);
+        for (int i = 0; i < MATRIX_LENGTH; i++) {
+            int multiplier = 1;
+            for (int o = 0; o < RECT_LENGTH; o++) multiplier *= RECT_LENGTH;
+            int index = (RECT_LENGTH * (i % RECT_LENGTH)) + ((i / RECT_LENGTH) * multiplier);
+            
+            int rect = getRect(index);
+            int xConst = (rect % RECT_LENGTH) * RECT_LENGTH;
+            int yConst = (rect / RECT_LENGTH) * RECT_LENGTH;
+            
+            int* rectMatrix = (int*) malloc(sizeof(*rectMatrix) * RECT_LENGTH * 2);
+            for (int o = 0; o < RECT_LENGTH * 2; o++) rectMatrix[o] = 0;
+
+            for (int y = 0; y < RECT_LENGTH; y++) {
+                for (int x = 0; x < RECT_LENGTH; x++) {
+                    int X = x + xConst;
+                    int Y = y + yConst;
+                    int ind = getIndex(X, Y);
+
+                    CELL* cell = (CELL*) posCells[ind];
+                    printd("%d ", cell->posibs[j]);
+                    rectMatrix[y] += cell->posibs[j];
+                    rectMatrix[RECT_LENGTH + x] += cell->posibs[j];
+                }
+                printd("\n");
+            }
+            
+            for (int o = 0; o < RECT_LENGTH * 2; o++) {
+                printd("%d ", rectMatrix[o]);
+            }
+            printd("\n");
+
+            matrices[i] = (uintptr_t) rectMatrix;
+        }
+
+
+
+
+        for (int i = 0; i < MATRIX_LENGTH; i++) {
+            free((int*) matrices[i]);
+        }
+        free(matrices);
+    }
+}
+
+
