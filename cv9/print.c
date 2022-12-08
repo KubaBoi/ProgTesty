@@ -1,5 +1,21 @@
 #include "print.h"
 
+void print(const char* format, ...) {
+    if (PRINT_STATE == 2) return;
+
+    va_list valist;
+    va_start(valist, format);
+    vprintf(format, valist);
+}
+
+void printd(const char* format, ...) {
+    if (PRINT_STATE == 0) return;
+
+    va_list valist;
+    va_start(valist, format);
+    vprintf(format, valist);
+}
+
 void printDelimiter(bool full) {
     for (int i = 0; i < MATRIX_LENGTH; i++) {
         if (full) print("+---");
@@ -11,12 +27,12 @@ void printDelimiter(bool full) {
 void printMatrix(char* matrix) {
     printDelimiter(true);
     for (int i = 0; i < MATRIX_SIZE; i++) {
-        if (!(i % 4)) printf("| %c   ", matrix[i]);
+        if (!(i % 4)) print("| %c   ", matrix[i]);
         else if (!((i + 1) % 16)) {
             print("%c |\n", matrix[i]);
             printDelimiter(!((i + 1) % 64));
         }
-        else if (!((i + 1) % 4)) printf("%c ", matrix[i]);
+        else if (!((i + 1) % 4)) print("%c ", matrix[i]);
         else print("%c   ", matrix[i]);
     }
 }
@@ -41,20 +57,4 @@ void printPosCells(char* matrix, uintptr_t* posCells) {
         printd("\n");
     }
     printd("%d, %d\n", count, countChars);
-}
-
-void print(const char* format, ...) {
-    if (PRINT_STATE == 2) return;
-
-    va_list valist;
-    va_start(valist, format);
-    vprintf(format, valist);
-}
-
-void printd(const char* format, ...) {
-    if (PRINT_STATE == 0) return;
-
-    va_list valist;
-    va_start(valist, format);
-    vprintf(format, valist);
 }

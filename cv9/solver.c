@@ -186,21 +186,25 @@ int findTwoLines(char* matrix, uintptr_t* posCells) {
                     int ind = getIndex(X, Y);
 
                     CELL* cell = (CELL*) posCells[ind];
-                    printd("%d ", cell->posibs[j]);
+                    printd("%d") // zkusim vypsat cell a uvidim jestli to matchuje
+                    // mozna je problem v prvnim makePoses
                     rectMatrix[y] += cell->posibs[j];
                     rectMatrix[RECT_LENGTH + x] += cell->posibs[j];
                 }
-                printd("\n");
             }
-            
-            for (int o = 0; o < RECT_LENGTH * 2; o++) {
+            for (int o = 0; o < RECT_LENGTH; o++) {
+                printd("%d ", rectMatrix[o]);
+            }
+            printd("    ");
+            for (int o = RECT_LENGTH; o < RECT_LENGTH * 2; o++) {
                 printd("%d ", rectMatrix[o]);
             }
             printd("\n");
-
+            break;
             matrices[i] = (uintptr_t) rectMatrix;
         }
-
+        printd("\n");
+        break;
 
 
 
