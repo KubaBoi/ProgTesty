@@ -40,13 +40,9 @@ void makeOnePosib(char* matrix, uintptr_t* posCells, int index) {
     getRectOfPosibs(matrix, rect, array);
     
     for (int j = 0; j < MATRIX_LENGTH; j++) {
-        if (!array[j] && !cell->posibs[j]) {
+        if (!array[j]) {
             cell->count++;
             cell->posibs[j] = true;
-        }
-        else if (array[j] && cell->posibs[j]) {
-            cell->count--;
-            cell->posibs[j] = false;
         }
     }
     

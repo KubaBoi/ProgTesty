@@ -9,11 +9,24 @@ int analyze(char* matrix, uintptr_t* posCells) {
             continue;  
         }
 
-        if (cell->count == 0) return 1;
+        if (cell->count == 0) return 0;
     }
 
-    if (filled == MATRIX_SIZE) return 0;
-    return 2;
+    if (filled == MATRIX_SIZE) return 1;
+    return 2 + findMax(matrix, posCells);
+}
+
+int findMax(char* matrix, uintptr_t* posCells) {
+    int max = 0;
+    int maxIndex = 0;
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        CELL* cell = (CELL*) posCells[i];
+        if (cell->count > max) {
+            max = cell->count;
+            maxIndex = i;
+        }
+    }
+    return maxIndex;
 }
 
 double percentage(char* matrix) {

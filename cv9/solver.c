@@ -186,11 +186,11 @@ int findTwoLines(char* matrix, uintptr_t* posCells) {
                     int ind = getIndex(X, Y);
 
                     CELL* cell = (CELL*) posCells[ind];
-                    printd("%d") // zkusim vypsat cell a uvidim jestli to matchuje
-                    // mozna je problem v prvnim makePoses
+                    printd("%d ", cell->posibs[j]);
                     rectMatrix[y] += cell->posibs[j];
                     rectMatrix[RECT_LENGTH + x] += cell->posibs[j];
                 }
+                printd("\n");
             }
             for (int o = 0; o < RECT_LENGTH; o++) {
                 printd("%d ", rectMatrix[o]);
@@ -200,19 +200,53 @@ int findTwoLines(char* matrix, uintptr_t* posCells) {
                 printd("%d ", rectMatrix[o]);
             }
             printd("\n");
-            break;
+            
             matrices[i] = (uintptr_t) rectMatrix;
         }
         printd("\n");
-        break;
-
-
 
         for (int i = 0; i < MATRIX_LENGTH; i++) {
             free((int*) matrices[i]);
         }
         free(matrices);
     }
+
+    return changes;
 }
 
+int solve(char* matrix) {
+    uintptr_t* posCells = (uintptr_t*) malloc(sizeof(*posCells) * MATRIX_SIZE);
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        posCells[i] = (uintptr_t) initCell();
+    }
 
+    makePosibs(matrix, posCells);
+
+    int changes = 1;
+    while (changes) {
+        changes = 0;
+        changes += fillOnePosibs(matrix, posCells);
+        changes += fillLonelyPosibs(matrix, posCells);
+    }
+
+    int ret = analyze(matrix, posCells);
+
+    if (ret >= 2) {
+        int count = 0;
+        int index = ret - 2;
+        CELL* maxCell = (CELL*) posCells[index];
+        for (int j = 0; j < MATRIX_LENGTH; j++) {
+            if (maxCell->posibs[j]) {
+                char* subMatrix = (char*) malloc(MATRIX_SIZE);
+                strcpy(subMatrix, matrix);
+                subMatrix[index] = 'a' + j;
+                count += solve(subMatrix);
+                free(subMatrix);
+            }
+        }
+        ret = count;
+    }
+    
+    freeCells(posCells);
+    return ret;
+}

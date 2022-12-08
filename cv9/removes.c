@@ -65,5 +65,9 @@ int removePos(uintptr_t* posCells, int index, int value) {
     counter += removePosInCol(posCells, index, value);
     counter += removePosInRect(posCells, index, value);
 
+    CELL* cell = (CELL*) posCells[index];
+    cell->count = 0;
+    for (int i = 0; i < MATRIX_LENGTH; i++) cell->posibs[i] = false; 
+
     return counter;
 }

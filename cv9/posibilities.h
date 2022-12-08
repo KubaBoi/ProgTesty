@@ -4,6 +4,7 @@
 #include "variables.h"
 #include "help.h"
 #include "removes.h"
+#include "print.h"
 
 void getPartOfPosibs(char* matrix, int constant, bool isX, bool* arr);
 void getRectOfPosibs(char* matrix, int number, bool* arr);

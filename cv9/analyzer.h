@@ -11,6 +11,8 @@
 */
 int analyze(char* matrix, uintptr_t* posCells);
 
+int findMax(char* matrix, uintptr_t* posCells);
+
 double percentage(char* matrix);
 
 #endif
