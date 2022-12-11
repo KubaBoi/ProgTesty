@@ -24,7 +24,8 @@ int main() {
     
     double tempPerc = percentage(matrix);
 
-    int result = solve(matrix);
+    int iterations = 0;
+    int result = solve(matrix, &iterations);
 
     switch (result)
     {
@@ -40,6 +41,7 @@ int main() {
     }
     printd("temp prcnt: %lf\n", tempPerc);
     printd("percetange: %lf\n", percentage(matrix));
+    printd("Iterations: %d\n", iterations);
 
     free(matrix);
 }

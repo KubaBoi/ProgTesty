@@ -60,13 +60,36 @@ int fillMatrixLine(char* matrix, char* line, int lineIndex) {
     for (int i = 0; i < MATRIX_LENGTH; i++) {
         int indexInLine = 2 + (i * 4);
         int index = startIndex + i;
+
+		if (!(i % 4)) {
+			if (line[indexInLine - 1] != ' ' ||
+				line[indexInLine - 2] != '|') return 1;
+		}
+		else if (line[indexInLine - 1] != ' ' ||
+				line[indexInLine - 2] != ' ' ||
+				line[indexInLine - 3] != ' ' ||
+				line[indexInLine + 1] != ' ') return 1;
         
         char c = line[indexInLine];
         if (c != ' ' && (c < 'a' || c > 'p')) return 1;
 
         matrix[index] = line[indexInLine];
     }
+	if (line[LINE_LENGTH - 1] != '|') return 1;
     return 0;
+}
+
+bool isDelimiterOk(char* line, int counter) {
+	char del = ' ';
+	if (!((counter - 1) % 8)) del = '-';
+	
+	for (int i = 0; i < LINE_LENGTH-1; i += 4) {
+		if (line[i] != '+' ||
+			line[i+1] != del ||
+			line[i+2] != del ||
+			line[i+3] != del) return false;
+	}
+	return line[LINE_LENGTH-1] == '+';
 }
 
 int readInput(char* matrix) {
@@ -82,6 +105,7 @@ int readInput(char* matrix) {
         if (!(counter % 2)) {
             if (fillMatrixLine(matrix, line, lineIndex++)) return 1;
         }
+		else if (!isDelimiterOk(line, counter)) return 1;
 
         free(line);
         line = readLine(&length);

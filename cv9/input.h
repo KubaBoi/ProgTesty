@@ -5,6 +5,7 @@
 #include <cstdio>
 
 #include "variables.h"
+#include "print.h"
 
 void nullString(char *str, int index, int size);
 

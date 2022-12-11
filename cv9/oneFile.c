@@ -3,8 +3,7 @@
 *
 * https://github.com/KubaBoi/ptt
 *
-* version: 1.0.8
-* author: Jakub Anderle
+* version: 1.0.10
 */
 
 #include <stdio.h>
@@ -23,7 +22,7 @@
 1 - debug
 2 - only debug
 */
-#define PRINT_STATE 0
+#define PRINT_STATE 1
 
 #define CHAR_BLOCK 10
 #define LINE_LENGTH 65
@@ -38,101 +37,6 @@ typedef struct cell {
 
 #endif
 
-#define INPUT_H
-
-
-void nullString(char *str, int index, int size) {
-	for (int i = index; i < size; i++) str[i] = 0;
-}
-
-int appendString(char *str, char *temp, int *filled) {
-	int f = *filled;
-	for (int i = 0; i < CHAR_BLOCK; i++) {
-		if (temp[i] == '\n') {
-			*filled = f;
-			return 1;
-		}
-
-		str[f++] = temp[i];
-		if (temp[i] == 0) f--;
-	}
-	*filled = f;
-	return 0;
-}
-
-char* readLine(int* length) {
-	int size = CHAR_BLOCK;
-	char *string = (char *)malloc(size);
-	int filled = 0;
-
-	nullString(string, 0, size);
-
-	char *newStr = (char *)malloc(CHAR_BLOCK);
-
-	while (true) {
-		nullString(newStr, 0, CHAR_BLOCK);
-
-		if (fgets(newStr, sizeof(newStr), stdin) == NULL) {
-			if (filled == 0) {
-				free(string);
-				free(newStr);
-				return NULL;
-			}
-            *length = filled;
-			break;
-		}
-
-		if (size < filled + CHAR_BLOCK) {
-			size *= 2;
-			string = (char *)realloc(string, size);
-			nullString(string, filled, size);
-		}
-
-		if (appendString(string, newStr, &filled)) break;
-	}
-
-    *length = filled;
-	free(newStr);
-	return string;
-}
-
-int fillMatrixLine(char* matrix, char* line, int lineIndex) {
-    int startIndex = lineIndex * MATRIX_LENGTH;
-    for (int i = 0; i < MATRIX_LENGTH; i++) {
-        int indexInLine = 2 + (i * 4);
-        int index = startIndex + i;
-        
-        char c = line[indexInLine];
-        if (c != ' ' && (c < 'a' || c > 'p')) return 1;
-
-        matrix[index] = line[indexInLine];
-    }
-    return 0;
-}
-
-int readInput(char* matrix) {
-    int length;
-    int counter = 0;
-    int lineIndex = 0;
-    
-    char* line = readLine(&length);
-    while (line) {
-        counter++;
-        if (length != LINE_LENGTH) return 1;
-
-        if (!(counter % 2)) {
-            if (fillMatrixLine(matrix, line, lineIndex++)) return 1;
-        }
-
-        free(line);
-        line = readLine(&length);
-    }
-    if (counter != 33) return 1;
-
-    return 0;
-}
-#define PRINT_H
-#define HELP_H
 
 
 void getCoordinates(int index, int* x, int* y) {
@@ -241,7 +145,122 @@ void printPosCells(char* matrix, uintptr_t* posCells) {
     printd("Max: %d\n", max);
     printd("%d, %d\n", count, countChars);
 }
-#define CHECKS_H
+
+
+void nullString(char *str, int index, int size) {
+	for (int i = index; i < size; i++) str[i] = 0;
+}
+
+int appendString(char *str, char *temp, int *filled) {
+	int f = *filled;
+	for (int i = 0; i < CHAR_BLOCK; i++) {
+		if (temp[i] == '\n') {
+			*filled = f;
+			return 1;
+		}
+
+		str[f++] = temp[i];
+		if (temp[i] == 0) f--;
+	}
+	*filled = f;
+	return 0;
+}
+
+char* readLine(int* length) {
+	int size = CHAR_BLOCK;
+	char *string = (char *)malloc(size);
+	int filled = 0;
+
+	nullString(string, 0, size);
+
+	char *newStr = (char *)malloc(CHAR_BLOCK);
+
+	while (true) {
+		nullString(newStr, 0, CHAR_BLOCK);
+
+		if (fgets(newStr, sizeof(newStr), stdin) == NULL) {
+			if (filled == 0) {
+				free(string);
+				free(newStr);
+				return NULL;
+			}
+            *length = filled;
+			break;
+		}
+
+		if (size < filled + CHAR_BLOCK) {
+			size *= 2;
+			string = (char *)realloc(string, size);
+			nullString(string, filled, size);
+		}
+
+		if (appendString(string, newStr, &filled)) break;
+	}
+
+    *length = filled;
+	free(newStr);
+	return string;
+}
+
+int fillMatrixLine(char* matrix, char* line, int lineIndex) {
+    int startIndex = lineIndex * MATRIX_LENGTH;
+    for (int i = 0; i < MATRIX_LENGTH; i++) {
+        int indexInLine = 2 + (i * 4);
+        int index = startIndex + i;
+
+		if (!(i % 4)) {
+			if (line[indexInLine - 1] != ' ' ||
+				line[indexInLine - 2] != '|') return 1;
+		}
+		else if (line[indexInLine - 1] != ' ' ||
+				line[indexInLine - 2] != ' ' ||
+				line[indexInLine - 3] != ' ' ||
+				line[indexInLine + 1] != ' ') return 1;
+        
+        char c = line[indexInLine];
+        if (c != ' ' && (c < 'a' || c > 'p')) return 1;
+
+        matrix[index] = line[indexInLine];
+    }
+	if (line[LINE_LENGTH - 1] != '|') return 1;
+    return 0;
+}
+
+bool isDelimiterOk(char* line, int counter) {
+	char del = ' ';
+	if (!((counter - 1) % 8)) del = '-';
+	
+	for (int i = 0; i < LINE_LENGTH-1; i += 4) {
+		if (line[i] != '+' ||
+			line[i+1] != del ||
+			line[i+2] != del ||
+			line[i+3] != del) return false;
+	}
+	return line[LINE_LENGTH-1] == '+';
+}
+
+int readInput(char* matrix) {
+    int length;
+    int counter = 0;
+    int lineIndex = 0;
+    
+    char* line = readLine(&length);
+    while (line) {
+        counter++;
+        if (length != LINE_LENGTH) return 1;
+
+        if (!(counter % 2)) {
+            if (fillMatrixLine(matrix, line, lineIndex++)) return 1;
+        }
+		else if (!isDelimiterOk(line, counter)) return 1;
+
+        free(line);
+        line = readLine(&length);
+    }
+    if (counter != 33) return 1;
+
+    return 0;
+}
 
 
 bool isPartOk(char* matrix, int x, int y, bool* arr) {
@@ -302,8 +321,6 @@ bool isMatrixOk(char* matrix) {
     }
     return true;
 }
-#define POSIBILITIES_H
-#define REMOVES_H
 
 
 int removePosInRow(uintptr_t* posCells, int index, int value) {
@@ -440,8 +457,6 @@ void makePosibs(char* matrix, uintptr_t* posCells) {
         makeOnePosib(matrix, posCells, i);
     }
 }
-#define SOLVER_H
-#define ANALYZER_H
 
 
 int findMax(char* matrix, uintptr_t* posCells) {
@@ -696,7 +711,7 @@ int findTwoLines(char* matrix, uintptr_t* posCells) {
     return changes;
 }
 
-int solve(char* matrix) {
+int solve(char* matrix, int* iterations) {
     uintptr_t* posCells = (uintptr_t*) malloc(sizeof(*posCells) * MATRIX_SIZE);
     for (int i = 0; i < MATRIX_SIZE; i++) {
         posCells[i] = (uintptr_t) initCell();
@@ -704,13 +719,17 @@ int solve(char* matrix) {
 
     makePosibs(matrix, posCells);
 
+    int iter = 0;
     int changes = 1;
     while (changes) {
+        iter++;
         changes = 0;
         changes += fillOnePosibs(matrix, posCells);
         changes += fillLonelyPosibs(matrix, posCells);
+        changes += findTwoLines(matrix, posCells);
     }
 
+    *iterations += iter;
     int ret = analyze(matrix, posCells);
 
     if (ret >= 2) {
@@ -722,7 +741,7 @@ int solve(char* matrix) {
                 char* subMatrix = (char*) malloc(MATRIX_SIZE);
                 strcpy(subMatrix, matrix);
                 subMatrix[index] = 'a' + j;
-                count += solve(subMatrix);
+                count += solve(subMatrix, iterations);
                 free(subMatrix);
             }
         }
@@ -747,7 +766,8 @@ int main() {
     
     double tempPerc = percentage(matrix);
 
-    int result = solve(matrix);
+    int iterations = 0;
+    int result = solve(matrix, &iterations);
 
     switch (result)
     {
@@ -763,6 +783,7 @@ int main() {
     }
     printd("temp prcnt: %lf\n", tempPerc);
     printd("percetange: %lf\n", percentage(matrix));
+    printd("Iterations: %d\n", iterations);
 
     free(matrix);
 }

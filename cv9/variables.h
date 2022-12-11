@@ -6,7 +6,7 @@
 1 - debug
 2 - only debug
 */
-#define PRINT_STATE 0
+#define PRINT_STATE 1
 
 #define CHAR_BLOCK 10
 #define LINE_LENGTH 65

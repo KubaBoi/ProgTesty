@@ -214,7 +214,7 @@ int findTwoLines(char* matrix, uintptr_t* posCells) {
     return changes;
 }
 
-int solve(char* matrix) {
+int solve(char* matrix, int* iterations) {
     uintptr_t* posCells = (uintptr_t*) malloc(sizeof(*posCells) * MATRIX_SIZE);
     for (int i = 0; i < MATRIX_SIZE; i++) {
         posCells[i] = (uintptr_t) initCell();
@@ -222,13 +222,17 @@ int solve(char* matrix) {
 
     makePosibs(matrix, posCells);
 
+    int iter = 0;
     int changes = 1;
     while (changes) {
+        iter++;
         changes = 0;
         changes += fillOnePosibs(matrix, posCells);
         changes += fillLonelyPosibs(matrix, posCells);
+        changes += findTwoLines(matrix, posCells);
     }
 
+    *iterations += iter;
     int ret = analyze(matrix, posCells);
 
     if (ret >= 2) {
@@ -240,7 +244,7 @@ int solve(char* matrix) {
                 char* subMatrix = (char*) malloc(MATRIX_SIZE);
                 strcpy(subMatrix, matrix);
                 subMatrix[index] = 'a' + j;
-                count += solve(subMatrix);
+                count += solve(subMatrix, iterations);
                 free(subMatrix);
             }
         }
