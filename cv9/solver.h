@@ -18,7 +18,6 @@ int fillOnePosibs(char* matrix, uintptr_t* posCells);
 int fillLonelyPosibs(char* matrix, uintptr_t* posCells);
 
 int findLines(char* matrix, uintptr_t* posCells);
-int findTwoLines(char* matrix, uintptr_t* posCells);
 
 int solve(char* matrix, int* iterations);
 

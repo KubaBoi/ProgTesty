@@ -99,117 +99,80 @@ int fillLonelyPosibs(char* matrix, uintptr_t* posCells) {
 
 int findLines(char* matrix, uintptr_t* posCells) {
     int changes = 0;
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        if (matrix[i] != ' ') continue;
-
-        if (i > 20) return changes;
-
-        CELL* cell = (CELL*) posCells[i];
-        if (cell->count <= 0) continue;
-
-        for (int j = 0; j < MATRIX_LENGTH; j++) {
-            if (!cell->posibs[j]) continue;
-            int countInRect = isAloneInRect(posCells, i, j);
-            
-            int countInRow = 0;
-            int countInCol = 0;
-            
-            int X, Y;
-            getCoordinates(i, &X, &Y);
-
-            int rect = getRect(i);
-            int xConst = (rect % RECT_LENGTH) * RECT_LENGTH;
-            int yConst = (rect / RECT_LENGTH) * RECT_LENGTH;
-
-            int* items = (int*) malloc(sizeof(*items) * countInRect);
-            for (int o = 0; o < countInRect; o++) items[o] = 0;
-
-            for (int o = 0; o < RECT_LENGTH; o++) {
-                int xP = o + xConst;
-                int yP = o + yConst;
-
-                int indX = getIndex(xP, Y);
-                int indY = getIndex(X, yP);
-
-                CELL* cellX = (CELL*) posCells[indX];
-                CELL* cellY = (CELL*) posCells[indY];
-
-                if (cellX->posibs[j]) items[countInRow++] = indX;
-                else if (cellY->posibs[j]) items[countInCol++] = indY;
-            }
-
-            if (countInRow == countInRect) {
-                changes += removePosInRow(posCells, i, j);
-            }
-            else if (countInCol == countInRect) {
-                changes += removePosInCol(posCells, i, j);
-            }
-            else {
-                free(items);
-                continue;
-            }
-
-            changes -= countInRect;
-
-            for (int o = 0; o < countInRect; o++) {
-                CELL* cell = (CELL*) posCells[items[o]];
-                cell->posibs[j] = true;
-                cell->count++;
-            }
-            free(items);
-        }
-    }
-    return changes;
-}
-
-int findTwoLines(char* matrix, uintptr_t* posCells) {
-    int changes = 0;
 
     for (int j = 0; j < MATRIX_LENGTH; j++) {
-        uintptr_t* matrices = (uintptr_t*) malloc(sizeof(*matrices) * MATRIX_LENGTH);
-        for (int i = 0; i < MATRIX_LENGTH; i++) {
-            int multiplier = 1;
-            for (int o = 0; o < RECT_LENGTH; o++) multiplier *= RECT_LENGTH;
-            int index = (RECT_LENGTH * (i % RECT_LENGTH)) + ((i / RECT_LENGTH) * multiplier);
-            
-            int rect = getRect(index);
-            int xConst = (rect % RECT_LENGTH) * RECT_LENGTH;
-            int yConst = (rect / RECT_LENGTH) * RECT_LENGTH;
-            
-            int* rectMatrix = (int*) malloc(sizeof(*rectMatrix) * RECT_LENGTH * 2);
-            for (int o = 0; o < RECT_LENGTH * 2; o++) rectMatrix[o] = 0;
+        /*
+        Matrix 4x16 of posibilities in rows for each rectangle
+        [0] is first rectangle first row,
+        [1] is second rectangle first row
+        [4] is first rectangle second row
+        */
+        int* rowsMatrix = (int*) malloc(sizeof(*rowsMatrix) * MATRIX_LENGTH * RECT_LENGTH);
 
-            for (int y = 0; y < RECT_LENGTH; y++) {
-                for (int x = 0; x < RECT_LENGTH; x++) {
-                    int X = x + xConst;
-                    int Y = y + yConst;
-                    int ind = getIndex(X, Y);
+        // Goes through every row (y value)
+        for (int y = 0; y < MATRIX_LENGTH; y++) {
+            // Goes through every rectangle (x value)
+            for (int x = 0; x < RECT_LENGTH; x++) {
+                int index = y * RECT_LENGTH + x; 
+                rowsMatrix[index] = 0;
 
+                for (int i = 0; i < RECT_LENGTH; i++) {
+                    int ind = y * MATRIX_LENGTH + x * RECT_LENGTH + i;
                     CELL* cell = (CELL*) posCells[ind];
-                    printd("%d ", cell->posibs[j]);
-                    rectMatrix[y] += cell->posibs[j];
-                    rectMatrix[RECT_LENGTH + x] += cell->posibs[j];
+                    if (cell->posibs[j]) rowsMatrix[index]++;
                 }
-                printd("\n");
             }
-            for (int o = 0; o < RECT_LENGTH; o++) {
-                printd("%d ", rectMatrix[o]);
-            }
-            printd("    ");
-            for (int o = RECT_LENGTH; o < RECT_LENGTH * 2; o++) {
-                printd("%d ", rectMatrix[o]);
-            }
-            printd("\n");
-            
-            matrices[i] = (uintptr_t) rectMatrix;
         }
-        printd("\n");
+
+        printd("'%c' ===========\n", 'a' + j);
+        for (int i = 0; i < MATRIX_LENGTH * RECT_LENGTH; i++) {
+            printd("%d ", rowsMatrix[i]);
+            if ((i+1) % 4 == 0) printd("\n");
+            if ((i+1) % 16 == 0) printd("----\n");
+        }
+
+        /*
+        Matrix 4x4 of counts of rows in rect
+        */
+        int* rowsCountPerColumn = (int*) malloc(sizeof(*rowsCountPerColumn) * MATRIX_LENGTH);
+        for (int i = 0; i < MATRIX_LENGTH; i++) rowsCountPerColumn[i] = 0;
+
+        for (int i = 0; i < MATRIX_LENGTH * RECT_LENGTH; i++) {
+            int ind = (4 * (i / MATRIX_LENGTH)) + i % RECT_LENGTH;
+            if (rowsMatrix[i]) rowsCountPerColumn[ind]++;
+        } 
 
         for (int i = 0; i < MATRIX_LENGTH; i++) {
-            free((int*) matrices[i]);
+            printd("%d ", rowsCountPerColumn[i]);
         }
-        free(matrices);
+        printd("\n"); 
+
+        for (int r = 0; r < RECT_LENGTH; r++) {
+            for (int i = r*4; i < r + RECT_LENGTH - 1; i++) {
+                int count = rowsCountPerColumn[i];
+                int size = 0;
+                /*
+                Array of indexes which have same not-empty rows
+                count of equalRows have to be same as count of
+                not-empty rows
+                */
+                int* equalRows = (int*) malloc(sizeof(*equalRows) * count);
+                for (int o = r; o < r + RECT_LENGTH; o++) {
+                    if (count = rowsCountPerColumn[o]) {
+                        equalRows[size++] = o;
+                    }
+                } 
+
+                for (int o = 0; o < size; o++) {
+                    
+                }
+            }
+        }
+
+        free(rowsCountPerColumn);
+        free(rowsMatrix);
     }
+    printd("=======\n");
 
     return changes;
 }
@@ -229,7 +192,7 @@ int solve(char* matrix, int* iterations) {
         changes = 0;
         changes += fillOnePosibs(matrix, posCells);
         changes += fillLonelyPosibs(matrix, posCells);
-        changes += findTwoLines(matrix, posCells);
+        if (iter == 1) changes += findLines(matrix, posCells);
     }
 
     *iterations += iter;
