@@ -644,6 +644,28 @@ int findLines(char* matrix, uintptr_t* posCells) {
         }
         printd("\n"); 
 
+        for (int r = 0; r < RECT_LENGTH; r++) {
+            for (int i = r*4; i < r + RECT_LENGTH - 1; i++) {
+                int count = rowsCountPerColumn[i];
+                int size = 0;
+                /*
+                Array of indexes which have same not-empty rows
+                count of equalRows have to be same as count of
+                not-empty rows
+                */
+                int* equalRows = (int*) malloc(sizeof(*equalRows) * count);
+                for (int o = r; o < r + RECT_LENGTH; o++) {
+                    if (count = rowsCountPerColumn[o]) {
+                        equalRows[size++] = o;
+                    }
+                } 
+
+                for (int o = 0; o < size; o++) {
+                    
+                }
+            }
+        }
+
         free(rowsCountPerColumn);
         free(rowsMatrix);
     }
