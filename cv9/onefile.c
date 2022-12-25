@@ -3,7 +3,7 @@
 *
 * https://github.com/KubaBoi/ptt
 *
-* version: 1.0.10
+* version: 1.0.16
 */
 
 #include <stdio.h>
@@ -22,7 +22,7 @@
 1 - debug
 2 - only debug
 */
-#define PRINT_STATE 1
+#define PRINT_STATE 0
 
 #define CHAR_BLOCK 10
 #define LINE_LENGTH 65
@@ -250,9 +250,15 @@ int readInput(char* matrix) {
         if (length != LINE_LENGTH) return 1;
 
         if (!(counter % 2)) {
-            if (fillMatrixLine(matrix, line, lineIndex++)) return 1;
+            if (fillMatrixLine(matrix, line, lineIndex++)) {
+				free(line);
+				return 1;
+			}
         }
-		else if (!isDelimiterOk(line, counter)) return 1;
+		else if (!isDelimiterOk(line, counter)) {
+			free(line);
+			return 1;
+		}
 
         free(line);
         line = readLine(&length);
@@ -459,6 +465,10 @@ void makePosibs(char* matrix, uintptr_t* posCells) {
 }
 
 
+/*
+finds cell with greatest count of possibilities
+and returns its index in matrix
+*/
 int findMax(char* matrix, uintptr_t* posCells) {
     int max = 0;
     int maxIndex = 0;
@@ -470,6 +480,23 @@ int findMax(char* matrix, uintptr_t* posCells) {
         }
     }
     return maxIndex;
+}
+
+/*
+finds cell with lowest count of possibilities
+and returns its index in matrix
+*/
+int findMin(char* matrix, uintptr_t* posCells) {
+    int min = MATRIX_LENGTH;
+    int minIndex = 0;
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        CELL* cell = (CELL*) posCells[i];
+        if (cell->count > 0 && cell->count < min) {
+            min = cell->count;
+            minIndex = i;
+        }
+    }
+    return minIndex;
 }
 
 int analyze(char* matrix, uintptr_t* posCells) {
@@ -485,7 +512,8 @@ int analyze(char* matrix, uintptr_t* posCells) {
     }
 
     if (filled == MATRIX_SIZE) return 1;
-    return 2 + findMax(matrix, posCells);
+    //return 2 + findMax(matrix, posCells);
+    return 2 + findMin(matrix, posCells);
 }
 
 double percentage(char* matrix) {
@@ -655,7 +683,7 @@ int findLines(char* matrix, uintptr_t* posCells) {
                 */
                 int* equalRows = (int*) malloc(sizeof(*equalRows) * count);
                 for (int o = r; o < r + RECT_LENGTH; o++) {
-                    if (count = rowsCountPerColumn[o]) {
+                    if (count == rowsCountPerColumn[o]) {
                         equalRows[size++] = o;
                     }
                 } 
@@ -689,7 +717,7 @@ int solve(char* matrix, int* iterations) {
         changes = 0;
         changes += fillOnePosibs(matrix, posCells);
         changes += fillLonelyPosibs(matrix, posCells);
-        if (iter == 1) changes += findLines(matrix, posCells);
+        //if (iter == 1) changes += findLines(matrix, posCells);
     }
 
     *iterations += iter;
@@ -698,11 +726,12 @@ int solve(char* matrix, int* iterations) {
     if (ret >= 2) {
         int count = 0;
         int index = ret - 2;
-        CELL* maxCell = (CELL*) posCells[index];
+        CELL* minCell = (CELL*) posCells[index];
         for (int j = 0; j < MATRIX_LENGTH; j++) {
-            if (maxCell->posibs[j]) {
+            if (minCell->posibs[j]) {
                 char* subMatrix = (char*) malloc(MATRIX_SIZE);
-                strcpy(subMatrix, matrix);
+                for (int i = 0; i < MATRIX_SIZE; i++) subMatrix[i] = matrix[i];
+
                 subMatrix[index] = 'a' + j;
                 count += solve(subMatrix, iterations);
                 free(subMatrix);
@@ -720,12 +749,13 @@ int main() {
     char* matrix = (char*) malloc(MATRIX_SIZE);
 
     printf("Zadejte hexadoku:\n");
-
+    printd("Testing input\n");
     if (readInput(matrix) || !isMatrixOk(matrix)) {
         printf("Nespravny vstup.\n");
         free(matrix);
         return 1;
     }
+    printd("Input ok\n");
     
     double tempPerc = percentage(matrix);
 

@@ -3,7 +3,7 @@
 # https://github.com/KubaBoi/ptt
 
 NAME=uk1_temp
-OBJFILES=$(NAME).o solver.o print.o input.o checks.o removes.o analyzer.o posibilities.o help.o
+OBJFILES=$(NAME).o print.o help.o solver.o analyzer.o input.o checks.o removes.o posibilities.o
 
 CC=g++
 CFLAGS= -Wall -pedantic

@@ -15,12 +15,13 @@ int main() {
     char* matrix = (char*) malloc(MATRIX_SIZE);
 
     printf("Zadejte hexadoku:\n");
-
+    printd("Testing input\n");
     if (readInput(matrix) || !isMatrixOk(matrix)) {
         printf("Nespravny vstup.\n");
         free(matrix);
         return 1;
     }
+    printd("Input ok\n");
     
     double tempPerc = percentage(matrix);
 

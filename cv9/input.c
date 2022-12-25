@@ -103,9 +103,15 @@ int readInput(char* matrix) {
         if (length != LINE_LENGTH) return 1;
 
         if (!(counter % 2)) {
-            if (fillMatrixLine(matrix, line, lineIndex++)) return 1;
+            if (fillMatrixLine(matrix, line, lineIndex++)) {
+				free(line);
+				return 1;
+			}
         }
-		else if (!isDelimiterOk(line, counter)) return 1;
+		else if (!isDelimiterOk(line, counter)) {
+			free(line);
+			return 1;
+		}
 
         free(line);
         line = readLine(&length);

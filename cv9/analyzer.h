@@ -6,6 +6,7 @@
 
 
 int findMax(char* matrix, uintptr_t* posCells);
+int findMin(char* matrix, uintptr_t* posCells);
 
 /*
 0 - done

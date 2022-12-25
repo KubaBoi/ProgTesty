@@ -158,7 +158,7 @@ int findLines(char* matrix, uintptr_t* posCells) {
                 */
                 int* equalRows = (int*) malloc(sizeof(*equalRows) * count);
                 for (int o = r; o < r + RECT_LENGTH; o++) {
-                    if (count = rowsCountPerColumn[o]) {
+                    if (count == rowsCountPerColumn[o]) {
                         equalRows[size++] = o;
                     }
                 } 
@@ -192,7 +192,7 @@ int solve(char* matrix, int* iterations) {
         changes = 0;
         changes += fillOnePosibs(matrix, posCells);
         changes += fillLonelyPosibs(matrix, posCells);
-        if (iter == 1) changes += findLines(matrix, posCells);
+        //if (iter == 1) changes += findLines(matrix, posCells);
     }
 
     *iterations += iter;
@@ -201,11 +201,12 @@ int solve(char* matrix, int* iterations) {
     if (ret >= 2) {
         int count = 0;
         int index = ret - 2;
-        CELL* maxCell = (CELL*) posCells[index];
+        CELL* minCell = (CELL*) posCells[index];
         for (int j = 0; j < MATRIX_LENGTH; j++) {
-            if (maxCell->posibs[j]) {
+            if (minCell->posibs[j]) {
                 char* subMatrix = (char*) malloc(MATRIX_SIZE);
-                strcpy(subMatrix, matrix);
+                for (int i = 0; i < MATRIX_SIZE; i++) subMatrix[i] = matrix[i];
+
                 subMatrix[index] = 'a' + j;
                 count += solve(subMatrix, iterations);
                 free(subMatrix);
